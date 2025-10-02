@@ -76,4 +76,11 @@ efi_init_func_table:
     mov             r11, [r10 + efi_simple_text_output_protocol.SetCursorPosition]
     mov             [r8 + efi_func_table.SetCursorPosition], r11
 
-    ret
+    ; Boot service functions
+    mov             r10, [rdx + efi_system_table.BootServices]
+    mov             r11, [r10 + efi_boot_services.AllocatePool]
+    mov             [r8 + efi_func_table.AllocatePool], r11
+    mov             r11, [r10 + efi_boot_services.FreePool]
+    mov             [r8 + efi_func_table.FreePool], r11
+
+    ret             
