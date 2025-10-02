@@ -5,6 +5,9 @@ SRCDIR   := src
 BUILDDIR := build
 TARGET   := $(BUILDDIR)/main.efi
 
+SRCS  := $(wildcard $(SRCDIR)/*.asm)
+OBJS  := $(patsubst $(SRCDIR)/%.asm,$(BUILDDIR)/%.obj,$(SRCS))
+
 NASMFLAGS := -f win64 -Iincludes/
 LDFLAGS   := /nologo /entry:efi_main /subsystem:efi_application /nodefaultlib /debug:none
 
@@ -14,8 +17,8 @@ all: $(TARGET)
 $(BUILDDIR)/%.obj: $(SRCDIR)/%.asm | $(BUILDDIR)
 	$(NASM) $(NASMFLAGS) -o $@ $<
 
-$(TARGET): $(BUILDDIR)/main.obj | $(BUILDDIR)
-	$(LD) $(LDFLAGS) /out:$@ $<
+$(TARGET): $(OBJS) | $(BUILDDIR)
+	$(LD) $(LDFLAGS) /out:$@ $^
 
 $(BUILDDIR):
 	mkdir -p $@
