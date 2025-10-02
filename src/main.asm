@@ -31,6 +31,9 @@ extern efi_init_func_table
 extern efi_funcs
 
 
+section .data
+    header_msg dw __?utf16?__("> Baremetal Hashmap v0.0.1"), 0x000A, 0x000D, __?utf16?__("> Boot done!"), 0x000A, 0x000D, 0x0000
+    ptra dq 0
 section .text
 
 ; ============================================= ;
@@ -68,6 +71,15 @@ efi_main:
     mov             rbp, rdx
     call            efi_init_func_table
     lea             r15, [rel efi_funcs]
+
+    ; Clear the screen
+    mov             rcx, [rbp + efi_system_table.ConOut]
+    call            [r15 + efi_func_table.ClearScreen]
+
+    ; Print header
+    mov             rcx, [rbp + efi_system_table.ConOut]
+    lea             rdx, [rel header_msg]
+    call            [r15 + efi_func_table.OutputString]
 
     xor             rax, rax
     add             rsp, 32 + 8
