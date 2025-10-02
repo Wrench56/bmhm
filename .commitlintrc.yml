@@ -25,6 +25,7 @@ rules:
       - tools
       - includes
       - efi
+      - ui
   subject-empty:
     level: error
   type:
