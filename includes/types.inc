@@ -34,6 +34,9 @@
 ;                                               ;
 ; ============================================= ;
 
+%ifndef TYPES_H
+%define TYPES_H
+
 %define NULL 0
 
 %define uint64 resq 1
@@ -54,3 +57,5 @@
 %define ptr    resq 1
 
 %define sizeof(struc_type_name) (struc_type_name %+ _size)
+
+%endif ; TYPES_H

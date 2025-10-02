@@ -9,7 +9,7 @@
 ;  Updated    :  2 Oct 2025                     ;
 ;  Version    : 1.0.0                           ;
 ;  License    : MIT                             ;
-;  Libraries  : types.inc                       ;
+;  Libraries  : None                            ;
 ;  ABI used   : Microsoft x64                   ;
 ;  Arch       : x64/AMD64                       ;
 ;  Extensions : None                            ;
@@ -23,7 +23,17 @@
 ;                                               ;
 ; ============================================= ;
 
+%ifndef EFILIB_H
+%define EFILIB_H
 %include %strcat(%substr(__FILE__, 0, %strlen(__FILE__) - %strlen("efilib.inc")), "types.inc")
+
+struc efi_table_header
+    .Signature:             uint64
+    .Revision:              uint32
+    .HeaderSize:            uint32
+    .CRC32:                 uint32
+    .Reserved:              uint32
+endstruc
 
 struc efi_system_table
     .Hdr:                   resb sizeof(efi_table_header)    ; EFI_TABLE_HEADER
@@ -42,14 +52,6 @@ struc efi_system_table
     .ConfigurationTable:    ptr                              ; EFI_CONFIGURATION_TABLE*
 endstruc
 
-struc efi_table_header
-    .Signature:             uint64
-    .Revision:              uint32
-    .HeaderSize:            uint32
-    .CRC32:                 uint32
-    .Reserved:              uint32
-endstruc
-
 struc efi_simple_text_output_protocol
     .Reset:                 ptr                              ; EFI_TEXT_RESET
     .OutputString:          ptr                              ; EFI_TEXT_STRING
@@ -62,3 +64,5 @@ struc efi_simple_text_output_protocol
     .EnableCursor:          ptr                              ; EFI_TEXT_ENABLE_CURSOR
     .Mode:                  ptr                              ; SIMPLE_TEXT_OUTPUT_MODE*
 endstruc
+
+%endif ; EFILIB_H
