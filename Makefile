@@ -1,29 +1,27 @@
-CC := clang
-LD := lld
+NASM := nasm
+LD   := lld-link
 
 SRCDIR   := src
 BUILDDIR := build
 TARGET   := $(BUILDDIR)/main.efi
 
-CFLAGS  := -ffreestanding -MMD -mno-red-zone -std=c11 -target x86_64-unknown-windows
-LDFLAGS := -flavor link -subsystem:efi_application -entry:efi_main
+NASMFLAGS := -f win64 -Iincludes/
+LDFLAGS   := /nologo /entry:efi_main /subsystem:efi_application /nodefaultlib /debug:none
 
 default: all
 all: $(TARGET)
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILDDIR)/%.obj: $(SRCDIR)/%.asm | $(BUILDDIR)
+	$(NASM) $(NASMFLAGS) -o $@ $<
 
-$(TARGET): $(BUILDDIR)/main.o | $(BUILDDIR)
-	$(LD) $(LDFLAGS) $< -out:$@
+$(TARGET): $(BUILDDIR)/main.obj | $(BUILDDIR)
+	$(LD) $(LDFLAGS) /out:$@ $<
 
 $(BUILDDIR):
 	mkdir -p $@
 
--include $(wildcard $(BUILDDIR)/*.d)
-
 clean:
-	rm -fv $(BUILDDIR)/*.o $(BUILDDIR)/*.d $(TARGET)
+	rm -fv $(BUILDDIR)/*.obj $(TARGET)
 
 run:
 	qemu-system-x86_64 \
