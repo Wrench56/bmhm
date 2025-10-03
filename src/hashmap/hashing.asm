@@ -48,7 +48,7 @@ section .text
 ;  Effects    : None                            ;
 ;                                               ;
 ;  Returns:                                     ;
-;   int                                         ;
+;   uint64 - hash                               ;
 ;                                               ;
 ;  Arguments:                                   ;
 ;   > RCX - uint8* buffer                       ;
