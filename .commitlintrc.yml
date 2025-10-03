@@ -27,6 +27,7 @@ rules:
       - efi
       - ui
       - hashmap
+      - core
   subject-empty:
     level: error
   type:
