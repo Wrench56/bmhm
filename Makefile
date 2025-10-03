@@ -5,7 +5,7 @@ SRCDIR   := src
 BUILDDIR := build
 TARGET   := $(BUILDDIR)/main.efi
 
-SRCS  := $(wildcard $(SRCDIR)/*.asm)
+SRCS  := $(shell find $(SRCDIR) -name '*.asm')
 OBJS  := $(patsubst $(SRCDIR)/%.asm,$(BUILDDIR)/%.obj,$(SRCS))
 
 NASMFLAGS := -f win64 -Iincludes/
@@ -14,17 +14,15 @@ LDFLAGS   := /nologo /entry:efi_main /subsystem:efi_application /nodefaultlib /d
 default: all
 all: $(TARGET)
 
-$(BUILDDIR)/%.obj: $(SRCDIR)/%.asm | $(BUILDDIR)
+$(BUILDDIR)/%.obj: $(SRCDIR)/%.asm
+	@mkdir -p $(dir $@)
 	$(NASM) $(NASMFLAGS) -o $@ $<
 
-$(TARGET): $(OBJS) | $(BUILDDIR)
+$(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) /out:$@ $^
 
-$(BUILDDIR):
-	mkdir -p $@
-
 clean:
-	rm -fv $(BUILDDIR)/*.obj $(TARGET)
+	rm -rf $(BUILDDIR) $(TARGET)
 
 run:
 	qemu-system-x86_64 \
