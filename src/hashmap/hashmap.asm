@@ -26,6 +26,7 @@
 
 extern efi_funcs
 extern malloc
+extern memset
 
 section .text
 
@@ -81,6 +82,11 @@ hashmap_init:
     test            rax, rax
     je              .error
     mov             [r15 + hashmap_t.entries], rax
+
+    lea             rcx, [rax]
+    mov             rdx, HASHMAP_INITIAL_CAPACITY * 8
+    xor             r8, r8
+    call            memset
 
     lea             rax, [r15]
 
