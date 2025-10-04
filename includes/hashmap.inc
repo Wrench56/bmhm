@@ -36,6 +36,7 @@ struc hashmap_t
     .size:          uint64
     .capacity:      uint64
     .eq_callback:   ptr
+    .hash_callback: ptr
 endstruc
 
 struc entry_t
