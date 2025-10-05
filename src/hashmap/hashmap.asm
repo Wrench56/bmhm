@@ -7,7 +7,7 @@
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  2 Oct 2025                     ;
-;  Updated    :  4 Oct 2025                     ;
+;  Updated    :  5 Oct 2025                     ;
 ;  Version    : 1.0.0                           ;
 ;  License    : MIT                             ;
 ;  Libraries  : None                            ;
@@ -38,7 +38,7 @@ section .text
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  2 Oct 2025                     ;
-;  Updated    :  4 Oct 2025                     ;
+;  Updated    :  5 Oct 2025                     ;
 ;  Extensions : None                            ;
 ;  Libraries  : None                            ;
 ;  ABI used   : Microsoft x64                   ;
@@ -72,12 +72,12 @@ hashmap_init:
     je              .error
 
     mov             qword [rax + hashmap_t.size], 0
-    mov             [rax + hashmap_t.eq_callback], rcx
+    mov             [rax + hashmap_t.eq_callback], r14
     mov             [rax + hashmap_t.hash_callback], r15
+    mov             qword [rax + hashmap_t.capacity], HASHMAP_INITIAL_CAPACITY
     mov             r15, rax
 
     mov             rcx, HASHMAP_INITIAL_CAPACITY * 8
-    mov             [r15 + hashmap_t.capacity], rcx
     call            malloc
     test            rax, rax
     je              .error
