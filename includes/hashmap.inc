@@ -43,6 +43,7 @@ struc entry_t
     .key:           ptr
     .value:         ptr
     .slotstate      uint8
+endstruc
 
 %define HASHMAP_SLOTSTATE_TOMBSTONE 0
 %define HASHMAP_SLOTSTATE_OCCUPIED 1
