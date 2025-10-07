@@ -98,3 +98,96 @@ hashmap_init:
 
 .error:
     jmp .exit
+
+
+; ============================================= ;
+;  > hashmap_get                                ;
+; --------------------------------------------- ;
+;                                               ;
+;  Get a pointer to a value based on a key.     ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  4 Oct 2025                     ;
+;  Updated    :  7 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Global                          ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   ptr value                                   ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - ptr hashmap_t                      ;
+;    > RDX - ptr key                            ;
+;                                               ;
+; ============================================= ;
+
+global hashmap_get
+hashmap_get:
+    push            rbp
+    push            r11
+    push            r12
+    push            r13
+    push            r14
+    sub             rsp, 32
+
+    ; RBP = pointer to hashmap
+    lea             rbp, [rcx]
+
+    ; R11 = pointer to key
+    lea             r11, [rdx]
+
+    lea             rcx, [rdx]
+    call            [rbp + hashmap_t.hash_callback]
+
+    ; R12 = hash result + iteration
+    lea             r12, [rax]
+
+    ; R13 = hashmap capacity - 1
+    mov             r13, [rbp + hashmap_t.capacity]
+    lea             r13, [r13 - 1]
+
+.floop:
+    lea             rax, [r13]
+    and             rax, r12
+    shl             rax, 3
+
+    mov             r14, [rbp + hashmap_t.entries]
+    mov             r14, [r14 + rax]
+    test            r14, r14
+    je              .not_found
+
+    mov             r8, [r14 + entry_t.slotstate]
+    test            r8, r8
+    je              .next_iter
+
+    lea             rcx, [r14 + entry_t.key]
+    lea             rdx, [r11]
+    call            [rbp + hashmap_t.eq_callback]
+    test            rax, rax
+    je              .found
+
+.next_iter:
+    lea             r12, [r12 + 1]
+    jmp             .floop
+
+.found:
+    mov             rax, [r14 + entry_t.value]
+    jmp             .epilog
+
+.not_found:
+    xor             rax, rax
+
+.epilog:
+    add             rsp, 32
+    pop             r14
+    pop             r13
+    pop             r12
+    pop             r11
+    pop             rbp
+    ret
