@@ -7,7 +7,7 @@
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  2 Oct 2025                     ;
-;  Updated    :  5 Oct 2025                     ;
+;  Updated    :  7 Oct 2025                     ;
 ;  Version    : 1.0.0                           ;
 ;  License    : MIT                             ;
 ;  Libraries  : None                            ;
@@ -54,17 +54,23 @@ section .text
 ;  Arguments:                                   ;
 ;    > RCX - ptr eq_callback_function           ;
 ;    > RDX - ptr hash_callback_function         ;
+;    > R8  - ptr print_key_callback_function    ;
+;    > R9  - ptr print_value_callback_function  ;
 ;                                               ;
 ; ============================================= ;
 global hashmap_init
 hashmap_init:
+    push            r12
+    push            r13
     push            r14
     push            r15
     sub             rsp, 32 + 8
 
-    ; Save eq_callback & hash_callback
-    mov             r14, rcx
-    mov             r15, rdx
+    ; Save callbacks
+    mov             r12, rcx
+    mov             r13, rdx
+    mov             r14, r8
+    mov             r15, r9
 
     mov             rcx, sizeof(hashmap_t)
     call            malloc
@@ -72,8 +78,10 @@ hashmap_init:
     je              .error
 
     mov             qword [rax + hashmap_t.size], 0
-    mov             [rax + hashmap_t.eq_callback], r14
-    mov             [rax + hashmap_t.hash_callback], r15
+    mov             [rax + hashmap_t.eq_callback], r12
+    mov             [rax + hashmap_t.hash_callback], r13
+    mov             [rax + hashmap_t.printk_callback], r14
+    mov             [rax + hashmap_t.printv_callback], r15
     mov             qword [rax + hashmap_t.capacity], HASHMAP_INITIAL_CAPACITY
     mov             r15, rax
 
@@ -94,6 +102,8 @@ hashmap_init:
     add             rsp, 32 + 8
     pop             r15
     pop             r14
+    pop             r13
+    pop             r12
     ret
 
 .error:

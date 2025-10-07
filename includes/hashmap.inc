@@ -7,7 +7,7 @@
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  2 Oct 2025                     ;
-;  Updated    :  2 Oct 2025                     ;
+;  Updated    :  7 Oct 2025                     ;
 ;  Version    : 1.0.0                           ;
 ;  License    : MIT                             ;
 ;  Libraries  : None                            ;
@@ -19,8 +19,11 @@
 ;                                               ;
 ;  Exports:                                     ;
 ;   > [C] HASHMAP_INITIAL_CAPACITY              ;
+;   > [C] HASHMAP_SLOTSTATE_TOMBSTONE           ;
+;   > [C] HASHMAP_SLOTSTATE_OCCUPIED            ;
 ;                                               ;
 ;   > [S] hashmap_t                             ;
+;   > [S] entry_t                               ;
 ;                                               ;
 ; ============================================= ;
 
@@ -32,17 +35,19 @@
 %define HASHMAP_INITIAL_CAPACITY 8
 
 struc hashmap_t
-    .entries:       ptr
-    .size:          uint64
-    .capacity:      uint64
-    .eq_callback:   ptr
-    .hash_callback: ptr
+    .entries:         ptr
+    .size:            uint64
+    .capacity:        uint64
+    .eq_callback:     ptr
+    .hash_callback:   ptr
+    .printk_callback: ptr
+    .printv_callback: ptr
 endstruc
 
 struc entry_t
-    .key:           ptr
-    .value:         ptr
-    .slotstate      uint8
+    .key:             ptr
+    .value:           ptr
+    .slotstate        uint8
 endstruc
 
 %define HASHMAP_SLOTSTATE_TOMBSTONE 0
