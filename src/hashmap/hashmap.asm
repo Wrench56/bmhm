@@ -149,23 +149,23 @@ hashmap_get:
     sub             rsp, 32
 
     ; RBP = pointer to hashmap
-    lea             rbp, [rcx]
+    mov             rbp, rcx
 
     ; R11 = pointer to key
-    lea             r11, [rdx]
+    mov             r11, rdx
 
-    lea             rcx, [rdx]
+    mov             rcx, rdx
     call            [rbp + hashmap_t.hash_callback]
 
     ; R12 = hash result + iteration
-    lea             r12, [rax]
+    mov             r12, rax
 
     ; R13 = hashmap capacity - 1
     mov             r13, [rbp + hashmap_t.capacity]
     lea             r13, [r13 - 1]
 
 .floop:
-    lea             rax, [r13]
+    mov             rax, r13
     and             rax, r12
     shl             rax, 3
 
@@ -179,7 +179,7 @@ hashmap_get:
     je              .next_iter
 
     mov             rcx, [r14 + entry_t.key]
-    lea             rdx, [r11]
+    mov             rdx, r11
     call            [rbp + hashmap_t.eq_callback]
     test            rax, rax
     je              .found
