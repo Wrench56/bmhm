@@ -188,8 +188,8 @@ hashmap_dump:
     mov             rax, [r14 + r15 * 8]
     test            rax, rax
     jz              .empty
-    mov             rcx, [rax + entry_t.slotstate]
-    test            rcx, rcx
+    mov             cl, [rax + entry_t.slotstate]
+    test            cl, cl
     jz              .tombstone
     mov             rcx, [rax + entry_t.key]
     call            [rbp + hashmap_t.printk_callback]
