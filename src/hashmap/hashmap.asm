@@ -19,6 +19,8 @@
 ;                                               ;
 ;  Exports:                                     ;
 ;   > [F] hashmap_init                          ;
+;   > [F] hashmap_get                           ;
+;   > [F] hashmap_add                           ;
 ;                                               ;
 ; ============================================= ;
 
@@ -195,6 +197,107 @@ hashmap_get:
 
 .epilog:
     add             rsp, 32
+    pop             r14
+    pop             r13
+    pop             r12
+    pop             r11
+    pop             rbp
+    ret
+
+
+; ============================================= ;
+;  > hashmap_add                                ;
+; --------------------------------------------- ;
+;                                               ;
+;  Add a key-value pair to the hashmap.         ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  7 Oct 2025                     ;
+;  Updated    :  7 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Global                          ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   bool success                                ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - ptr hashmap_t                      ;
+;    > RDX - ptr key                            ;
+;    > R8  - ptr value                          ;
+;                                               ;
+; ============================================= ;
+
+global hashmap_add
+hashmap_add:
+    push            rbp
+    push            r11
+    push            r12
+    push            r13
+    push            r14
+    push            r15
+    sub             rsp, 32 + 8
+
+    ; RBP = pointer to hashmap
+    mov             rbp, rcx
+
+    ; R11 = pointer to key
+    mov             r11, rdx
+
+    ; R15 = pointer to value
+    mov             r15, r8
+
+    mov             rcx, rdx
+    call            [rbp + hashmap_t.hash_callback]
+
+    ; R12 = hash result + iteration
+    mov             r12, rax
+
+    ; R13 = hashmap capacity - 1
+    mov             r13, [rbp + hashmap_t.capacity]
+    lea             r13, [r13 - 1]
+
+.floop:
+    mov             rax, r13
+    and             rax, r12
+    shl             rax, 3
+
+    mov             r14, [rbp + hashmap_t.entries]
+    mov             r14, [r14 + rax]
+    test            r14, r14
+    je              .empty_found
+
+    mov             r8, [r14 + entry_t.slotstate]
+    test            r8, r8
+    je              .tombstone_found
+
+    lea             r12, [r12 + 1]
+    jmp             .floop
+
+.empty_found:
+    ; Allocate a new entry_t
+    mov             r12, rax
+    mov             rcx, sizeof(entry_t)
+    call            malloc
+    mov             rcx, [rbp + hashmap_t.entries]
+    mov             [rcx + r12], rax
+    mov             r14, rax
+
+.tombstone_found:
+    mov             byte [r14 + entry_t.slotstate], 1
+    mov             [r14 + entry_t.key], r11
+    mov             [r14 + entry_t.value], r15
+    mov             rax, 1024
+    add             qword [rbp + hashmap_t.size], 1
+
+.epilog:
+    add             rsp, 32 + 8
+    pop             r15
     pop             r14
     pop             r13
     pop             r12
