@@ -48,7 +48,7 @@ section .text
 ;  Effects    : None                            ;
 ;                                               ;
 ;  Returns:                                     ;
-;   bool success                                ;
+;   ptr memory region with the UTF-16 string    ;
 ;                                               ;
 ;  Arguments:                                   ;
 ;   > RCX - the uint64 number                   ;
@@ -78,4 +78,5 @@ u64_to_hex:
     dec             r9
     jnz             .loop
 
+    mov             rax, rdx
     ret
