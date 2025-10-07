@@ -63,8 +63,8 @@ hashmap_init:
     sub             rsp, 32 + 8
 
     ; Save eq_callback & hash_callback
-    lea             r14, [rcx]
-    lea             r15, [rdx]
+    mov             r14, rcx
+    mov             r15, rdx
 
     mov             rcx, sizeof(hashmap_t)
     call            malloc
@@ -83,12 +83,12 @@ hashmap_init:
     je              .error
     mov             [r15 + hashmap_t.entries], rax
 
-    lea             rcx, [rax]
+    mov             rcx, rax
     mov             rdx, HASHMAP_INITIAL_CAPACITY * 8
     xor             r8, r8
     call            memset
 
-    lea             rax, [r15]
+    mov             rax, r15
 
 .exit:
     add             rsp, 32 + 8
