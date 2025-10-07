@@ -19,6 +19,8 @@
 ;                                               ;
 ;  Exports:                                     ;
 ;   > [F] u64_to_hex                            ;
+;   > [F] u64_to_dec                            ;
+;   > [F] u64_dec_len                           ;
 ;                                               ;
 ; ============================================= ;
 
@@ -159,3 +161,124 @@ u64_to_dec:
     pop             rdx
     mov             rax, rdx
     ret
+
+
+; ============================================= ;
+;  > u64_dec_len                                ;
+; --------------------------------------------- ;
+;                                               ;
+;  Compute the decimal digit count (unpadded    ;
+;  length) of a uint64.                         ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  7 Oct 2025                     ;
+;  Updated    :  7 Oct 2025                     ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Global                          ;
+;  Returns:                                     ;
+;   uint8 number of digits (1–20)               ;
+;                                               ;
+;  Arguments:                                   ;
+;   > RCX - uint64 value                        ;
+;                                               ;
+; ============================================= ;
+global u64_dec_len
+u64_dec_len:
+    test    rcx, rcx
+    jnz     .check
+    mov     eax, 1
+    ret
+
+.check:
+    cmp     rcx, 10
+    jb      .len1
+    cmp     rcx, 100
+    jb      .len2
+    cmp     rcx, 1000
+    jb      .len3
+    cmp     rcx, 10000
+    jb      .len4
+    cmp     rcx, 100000
+    jb      .len5
+    cmp     rcx, 1000000
+    jb      .len6
+    cmp     rcx, 10000000
+    jb      .len7
+    cmp     rcx, 100000000
+    jb      .len8
+    cmp     rcx, 1000000000
+    jb      .len9
+    mov     rdx, 10000000000
+    cmp     rcx, rdx
+    jb      .len10
+    mov     rdx, 100000000000
+    cmp     rcx, rdx
+    jb      .len11
+    mov     rdx, 1000000000000
+    cmp     rcx, rdx
+    jb      .len12
+    mov     rdx, 10000000000000
+    cmp     rcx, rdx
+    jb      .len13
+    mov     rdx, 100000000000000
+    cmp     rcx, rdx
+    jb      .len14
+    mov     rdx, 1000000000000000
+    cmp     rcx, rdx
+    jb      .len15
+    mov     rdx, 10000000000000000
+    cmp     rcx, rdx
+    jb      .len16
+    mov     rdx, 100000000000000000
+    cmp     rcx, rdx
+    jb      .len17
+    mov     rdx, 1000000000000000000
+    cmp     rcx, rdx
+    jb      .len18
+    mov     rdx, 10000000000000000000
+    cmp     rcx, rdx
+    jb      .len19
+    mov     eax, 20
+    ret
+
+.len1:  mov eax, 1
+        ret
+.len2:  mov eax, 2
+        ret
+.len3:  mov eax, 3
+        ret
+.len4:  mov eax, 4
+        ret
+.len5:  mov eax, 5
+        ret
+.len6:  mov eax, 6
+        ret
+.len7:  mov eax, 7
+        ret
+.len8:  mov eax, 8
+        ret
+.len9:  mov eax, 9
+        ret
+.len10: mov eax, 10
+        ret
+.len11: mov eax, 11
+        ret
+.len12: mov eax, 12
+        ret
+.len13: mov eax, 13
+        ret
+.len14: mov eax, 14
+        ret
+.len15: mov eax, 15
+        ret
+.len16: mov eax, 16
+        ret
+.len17: mov eax, 17
+        ret
+.len18: mov eax, 18
+        ret
+.len19: mov eax, 19
+        ret
