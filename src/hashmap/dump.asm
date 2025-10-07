@@ -200,7 +200,7 @@ hashmap_dump:
     call            printf
 
 
-    mov             rax, [r14]
+    mov             rax, [r14 + r15 * 8]
     mov             rcx, [rax + entry_t.value]
     call            [rbp + hashmap_t.printv_callback]
     mov             rcx, rax
