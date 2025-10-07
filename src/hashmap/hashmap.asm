@@ -178,7 +178,7 @@ hashmap_get:
     test            r8, r8
     je              .next_iter
 
-    lea             rcx, [r14 + entry_t.key]
+    mov             rcx, [r14 + entry_t.key]
     lea             rdx, [r11]
     call            [rbp + hashmap_t.eq_callback]
     test            rax, rax
