@@ -21,6 +21,7 @@
 ;   > [F] hashmap_init                          ;
 ;   > [F] hashmap_get                           ;
 ;   > [F] hashmap_add                           ;
+;   > [F] hashmap_remove                        ;
 ;                                               ;
 ; ============================================= ;
 
@@ -298,6 +299,101 @@ hashmap_add:
 .epilog:
     add             rsp, 32 + 8
     pop             r15
+    pop             r14
+    pop             r13
+    pop             r12
+    pop             r11
+    pop             rbp
+    ret
+
+
+; ============================================= ;
+;  > hashmap_remove                             ;
+; --------------------------------------------- ;
+;                                               ;
+;  Remove a key-value pair to the hashmap.      ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  7 Oct 2025                     ;
+;  Updated    :  7 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Global                          ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   ptr value (or NULL)                         ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - ptr hashmap_t                      ;
+;    > RDX - ptr key                            ;
+;                                               ;
+; ============================================= ;
+
+global hashmap_remove
+hashmap_remove:
+    push            rbp
+    push            r11
+    push            r12
+    push            r13
+    push            r14
+    sub             rsp, 32
+
+    ; RBP = pointer to hashmap
+    mov             rbp, rcx
+
+    ; R11 = pointer to key
+    mov             r11, rdx
+
+    mov             rcx, rdx
+    call            [rbp + hashmap_t.hash_callback]
+
+    ; R12 = hash result + iteration
+    mov             r12, rax
+
+    ; R13 = hashmap capacity - 1
+    mov             r13, [rbp + hashmap_t.capacity]
+    lea             r13, [r13 - 1]
+
+.floop:
+    mov             rax, r13
+    and             rax, r12
+    shl             rax, 3
+
+    mov             r14, [rbp + hashmap_t.entries]
+    mov             r14, [r14 + rax]
+    test            r14, r14
+    je              .not_found
+
+    mov             r8, [r14 + entry_t.slotstate]
+    test            r8, r8
+    je              .next_iter
+
+    mov             rcx, [r14 + entry_t.key]
+    mov             rdx, r11
+    call            [rbp + hashmap_t.eq_callback]
+    test            rax, rax
+    je              .found
+
+.next_iter:
+    lea             r12, [r12 + 1]
+    jmp             .floop
+
+.found:
+    mov             rax, [r14 + entry_t.value]
+    mov             byte [r14 + entry_t.slotstate], 0
+    sub             qword [rbp + hashmap_t.size], 1
+    jmp             .epilog
+
+.not_found:
+    xor             rax, rax
+
+.epilog:
+    add             rsp, 32
     pop             r14
     pop             r13
     pop             r12
