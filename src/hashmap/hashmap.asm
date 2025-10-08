@@ -300,9 +300,8 @@ hashmap_add:
 
     ; Check if growth is required
     mov             rax, [rbp + hashmap_t.size]
-    lea             rdx, [rax * 4 + 4 * 1]
+    lea             rdx, [rax * 2 + 2 * 1]
     mov             rcx, [rbp + hashmap_t.capacity]
-    lea             rcx, [rcx + 2 * rcx]
     cmp             rdx, rcx
     jbe             .skip_growth
 
