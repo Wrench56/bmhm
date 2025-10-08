@@ -24,6 +24,7 @@
 ;   > [F] hashmap_remove                        ;
 ;   > [F] hashmap_set_frees                     ;
 ;   > [F] hashmap_resize                        ;
+;   > [F] hashmap_destroy                       ;
 ;                                               ;
 ; ============================================= ;
 
@@ -651,3 +652,83 @@ hashmap_resize:
     pop     r12
     pop     rbp
     ret
+
+
+; ============================================= ;
+;  > hashmap_destroy                            ;
+; --------------------------------------------- ;
+;                                               ;
+;  Destroy the hashmap and the underlying       ;
+;  data structures.                             ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  8 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Global                          ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   void                                        ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - ptr hashmap_t                      ;
+;                                               ;
+; ============================================= ;
+
+global hashmap_destroy
+hashmap_destroy:
+    push            rbp
+    push            r15
+    push            r14
+    push            r13
+    push            r12
+    sub             rsp, 32 + 8
+
+    ; RBP = hashmap
+    mov             rbp, rcx
+
+    ; R15 = entries
+    mov             r15, [rbp + hashmap_t.entries]
+
+    ; R14 = capacity
+    mov             r14, [rbp + hashmap_t.capacity]
+    ; R13 = iterator
+    xor             r13, r13
+.dloop:
+    ; R12 = entry
+    mov             r12, [r15 + r13 * 8]
+    test            r12, r12
+    jz              .next
+    mov             rcx, [r12 + entry_t.key]
+    call            [rbp + hashmap_t.freek_callback]
+    mov             rcx, [r12 + entry_t.value]
+    call            [rbp + hashmap_t.freev_callback]
+
+    mov             rcx, r12
+    call            free
+
+.next:
+    add             r13, 1
+    cmp             r13, r14
+    jb              .dloop
+
+    mov             rcx, r15
+    call            free
+
+    mov             rcx, rbp
+    call            free
+
+    add             rsp, 32 + 8
+    pop             r12
+    pop             r13
+    pop             r14
+    pop             r15
+    pop             rbp
+    ret
+

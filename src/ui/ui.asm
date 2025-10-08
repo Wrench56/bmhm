@@ -6,7 +6,7 @@
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  7 Oct 2025                     ;
-;  Updated    :  7 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
 ;  Version    : 1.0.0                           ;
 ;  License    : MIT                             ;
 ;  Libraries  : None                            ;
@@ -40,6 +40,7 @@ extern hashmap_dump
 extern hashmap_add
 extern hashmap_get
 extern hashmap_remove
+extern hashmap_destroy
 
 section .data
     separator   dw __?utf16?__("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"), 0x000A, 0x000D, 0x000
@@ -222,7 +223,8 @@ ui_mainloop:
     jmp             .poll
 
 .reset:
-    ; TODO: Destroy old hashmap
+    mov             rbp
+    call            hashmap_destroy
     call            hashmap_default_init
     mov             rbp, rax
     lea             rcx, [rel hm_reset]
