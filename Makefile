@@ -25,6 +25,8 @@ clean:
 	rm -rf $(BUILDDIR) $(TARGET)
 
 run:
+	@mkdir -p "./EFI/BOOT/"
+	cp $(TARGET) ./EFI/BOOT/BOOTX64.EFI
 	qemu-system-x86_64 \
 		-drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2-ovmf/x64/OVMF_CODE.4m.fd \
 		-drive format=raw,file=fat:rw:$(PWD) \
