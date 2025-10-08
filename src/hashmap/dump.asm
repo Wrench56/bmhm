@@ -38,6 +38,8 @@ section .data
     entries_hdr     dw __?utf16?__(" > Entries       @ 0x"), 0x0000
     eqcb_hdr        dw __?utf16?__(" > EQ Callback   @ 0x"), 0x0000
     hashcb_hdr      dw __?utf16?__(" > Hash Callback @ 0x"), 0x0000
+    pkcb_hdr        dw __?utf16?__(" > PK Callback   @ 0x"), 0x0000
+    pvcb_hdr        dw __?utf16?__(" > PV Callback   @ 0x"), 0x0000
     size_hdr        dw __?utf16?__(" > Size          : "), 0x0000
     capacity_hdr    dw __?utf16?__(" > Capacity      : "), 0x0000
     entries_section dw 0x000A, 0x000D, __?utf16?__("Entries:"), 0x000A, 0x000D, 0x0000
@@ -120,6 +122,24 @@ hashmap_dump:
     lea             rcx, [rel hashcb_hdr]
     call            printf
     mov             rcx, [rbp + hashmap_t.hash_callback]
+    lea             rdx, [rsp + 32]
+    call            u64_to_hex
+    lea             rcx, [rsp + 32]
+    call            printf
+
+    ; Print Key Callback
+    lea             rcx, [rel pkcb_hdr]
+    call            printf
+    mov             rcx, [rbp + hashmap_t.printk_callback]
+    lea             rdx, [rsp + 32]
+    call            u64_to_hex
+    lea             rcx, [rsp + 32]
+    call            printf
+
+    ; Print Value Callback
+    lea             rcx, [rel pvcb_hdr]
+    call            printf
+    mov             rcx, [rbp + hashmap_t.printv_callback]
     lea             rdx, [rsp + 32]
     call            u64_to_hex
     lea             rcx, [rsp + 32]
