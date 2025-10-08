@@ -175,8 +175,8 @@ hashmap_get:
     test            r14, r14
     je              .not_found
 
-    mov             r8, [r14 + entry_t.slotstate]
-    test            r8, r8
+    movzx           r8d, byte [r14 + entry_t.slotstate]
+    test            r8d, r8d
     je              .next_iter
 
     mov             rcx, [r14 + entry_t.key]
@@ -273,8 +273,8 @@ hashmap_add:
     test            r14, r14
     je              .empty_found
 
-    mov             r8, [r14 + entry_t.slotstate]
-    test            r8, r8
+    movzx           r8d, byte [r14 + entry_t.slotstate]
+    test            r8d, r8d
     je              .tombstone_found
 
     lea             r12, [r12 + 1]
@@ -369,8 +369,8 @@ hashmap_remove:
     test            r14, r14
     je              .not_found
 
-    mov             r8, [r14 + entry_t.slotstate]
-    test            r8, r8
+    movzx           r8d, byte [r14 + entry_t.slotstate]
+    test            r8d, r8d
     je              .next_iter
 
     mov             rcx, [r14 + entry_t.key]
