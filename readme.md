@@ -7,7 +7,7 @@ A ~6 day adventure of implementing a linear-probing based hashmap on baremetal A
 ## Features
 
 * Linear probing with tombstones
-* Growth when load-factor reacher 75%
+* Growth when load-factor reacher 50%
 * Fully generic: callbacks for equality, hashing, pretty-printing, freeing
 * Microsoft x64 ABI throghout the program
 * UTF-16 strings
