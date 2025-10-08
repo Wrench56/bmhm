@@ -125,6 +125,9 @@ ui_mainloop:
     cmp             ax, 'Y'
     jne             .poll
 
+    mov             rcx, rbp
+    call            hashmap_destroy
+
     add             rsp, 32 + 8
     pop             r14
     pop             rbp
@@ -223,7 +226,7 @@ ui_mainloop:
     jmp             .poll
 
 .reset:
-    mov             rbp
+    mov             rcx, rbp
     call            hashmap_destroy
     call            hashmap_default_init
     mov             rbp, rax
