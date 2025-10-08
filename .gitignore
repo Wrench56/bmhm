@@ -6,3 +6,9 @@ tools/commitlint*
 
 # Ignore NvVars
 NvVars
+
+# Ignore playground/ directory
+playground/
+
+# Ignore EFI/ directory
+EFI/
