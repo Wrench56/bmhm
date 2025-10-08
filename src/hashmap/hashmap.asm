@@ -23,6 +23,7 @@
 ;   > [F] hashmap_add                           ;
 ;   > [F] hashmap_remove                        ;
 ;   > [F] hashmap_set_frees                     ;
+;   > [F] hashmap_resize                        ;
 ;                                               ;
 ; ============================================= ;
 
@@ -147,8 +148,12 @@ hashmap_init:
 ; ============================================= ;
 global hashmap_set_frees
 hashmap_set_frees:
+    sub             rsp, 32 + 8
+    
     mov             [rcx + hashmap_t.freek_callback], rdx
     mov             [rcx + hashmap_t.freev_callback], r8
+
+    add             rsp, 32 + 8
     ret
 
 
@@ -292,7 +297,26 @@ hashmap_add:
     ; R15 = pointer to value
     mov             r15, r8
 
-    mov             rcx, rdx
+    ; Check if growth is required
+    mov             rax, [rbp + hashmap_t.size]
+    lea             rdx, [rax * 4 + 4 * 1]
+    mov             rcx, [rbp + hashmap_t.capacity]
+    lea             rcx, [rcx + 2 * rcx]
+    cmp             rdx, rcx
+    jbe             .skip_growth
+
+    mov             qword [rsp + 32], r11
+
+    lea             rdx, [2 * rcx]
+    mov             rcx, rbp
+    call            hashmap_resize
+    test            rax, rax
+    jz              .add_fail
+
+    mov             r11, [rsp + 32]
+
+.skip_growth:
+    mov             rcx, r11
     call            [rbp + hashmap_t.hash_callback]
 
     ; R12 = hash result + iteration
@@ -344,6 +368,10 @@ hashmap_add:
     pop             r11
     pop             rbp
     ret
+
+.add_fail:
+    xor             rax, rax
+    jmp             .epilog
 
 .tombstone_found:
     mov             rcx, [r14 + entry_t.key]
@@ -474,4 +502,152 @@ hashmap_remove:
 ; ============================================= ;
 
 hashmap_skip_free:
+    ret
+
+
+; ============================================= ;
+;  > hashmap_resize                             ;
+; --------------------------------------------- ;
+;                                               ;
+;  Resize and clean up the hashmap.             ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  8 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Global                          ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   void                                        ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - ptr hashmap_t                      ;
+;    > RDX - uint64 new capacity                ;
+;                                               ;
+; ============================================= ;
+
+global hashmap_resize
+hashmap_resize:
+    push    rbp
+    push    r12
+    push    r13
+    push    r14
+    push    r15
+    push    rdi
+    push    rsi
+    push    rbx
+    sub     rsp, 32 + 8
+
+    ; RBP = hashmap
+    mov     rbp, rcx
+
+    ; R13 = new capacity
+    mov     r13, rdx
+
+    ; R12 = new_capacity - 1
+    lea     r12, [r13 - 1]
+
+    ; R14 = old entries
+    mov     r14, [rbp + hashmap_t.entries]
+    ; R15 = old capacity
+    mov     r15, [rbp + hashmap_t.capacity]
+
+    ; Alloc new entries array
+    mov     rcx, r13
+    shl     rcx, 3
+    call    malloc
+    test    rax, rax
+    jz      .fail
+
+    ; RSI = new entries
+    mov     rsi, rax
+
+    mov     rcx, rax
+    mov     rdx, r13
+    shl     rdx, 3
+    xor     r8,  r8
+    call    memset
+
+    ; RBX = iterator
+    xor     rbx, rbx
+.rehash_loop:
+    cmp     rbx, r15
+    jae     .done_rehash
+
+    mov     rax, [r14 + rbx * 8]
+    test    rax, rax
+    jz      .next
+    mov     rdi, rax
+
+    movzx   edx, byte [rax + entry_t.slotstate]
+    test    edx, edx
+    jz      .tombstone
+
+    mov     rcx, [rax + entry_t.key]
+    call    [rbp + hashmap_t.hash_callback]
+    ; R11 = hash
+    mov     r11, rax
+.probe_new:
+    mov     rax, r11
+    and     rax, r12
+    shl     rax, 3
+
+    mov     rdx, [rsi + rax]
+    test    rdx, rdx
+    jnz     .bump_and_probe
+    mov     [rsi + rax], rdi
+    jmp     .next
+
+.bump_and_probe:
+    add     r11, 1
+    jmp     .probe_new
+
+.tombstone:
+    mov     rcx, [r14 + rbx * 8]
+    mov     rcx, [rcx + entry_t.key]
+    call    [rbp + hashmap_t.freek_callback]
+    mov     rcx, [r14 + rbx * 8]
+    mov     rcx, [rcx + entry_t.value]
+    call    [rbp + hashmap_t.freev_callback]
+    mov     rcx, [r14 + rbx * 8]
+    call    free
+    jmp     .next
+
+.next:
+    add     rbx, 1
+    jmp     .rehash_loop
+
+.done_rehash:
+    ; Switch tables & cleanup
+    mov     [rbp + hashmap_t.entries], rsi
+    mov     [rbp + hashmap_t.capacity], r13
+
+    test    r14, r14
+    jz      .ok
+    mov     rcx, r14
+    call    free
+
+.ok:
+    mov     eax, 1024
+    jmp     .epilog
+
+.fail:
+    xor     eax, eax
+
+.epilog:
+    add     rsp, 32 + 8
+    pop     rbx
+    pop     rsi
+    pop     rdi
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    pop     rbp
     ret
