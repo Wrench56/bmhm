@@ -20,6 +20,9 @@
 ;   > [S] efi_system_table                      ;
 ;   > [S] efi_table_header                      ;
 ;   > [S] efi_simple_text_output_protocol       ;
+;   > [S] efi_simple_text_input_protocol        ;
+;   > [S] efi_input_key                         ;
+;   > [S] efi_boot_services                     ;
 ;                                               ;
 ; ============================================= ;
 
@@ -65,6 +68,17 @@ struc efi_simple_text_output_protocol
     .SetCursorPosition:                 ptr                  ; EFI_TEXT_SET_CURSOR_POSITION
     .EnableCursor:                      ptr                  ; EFI_TEXT_ENABLE_CURSOR
     .Mode:                              ptr                  ; SIMPLE_TEXT_OUTPUT_MODE*
+endstruc
+
+struc efi_simple_text_input_protocol
+        .Reset:                         ptr                  ; EFI_INPUT_RESET
+        .ReadKeyStroke:                 ptr                  ; EFI_INPUT_READ_KEY
+        .WaitForKey                     ptr                  ; EFI_EVENT
+endstruc
+
+struc efi_input_key
+        .ScanCode:                      uint16
+        .UnicodeChar:                   char16
 endstruc
 
 struc efi_boot_services

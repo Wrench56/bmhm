@@ -29,10 +29,12 @@
 struc efi_func_table
     .ClearScreen:        ptr
     .OutputString:       ptr
-    .SetCursorPosition   ptr
+    .SetCursorPosition:  ptr
 
-    .AllocatePool        ptr
-    .FreePool            ptr
+    .AllocatePool:       ptr
+    .FreePool:           ptr
+
+    .ReadKeyStroke:      ptr
 endstruc
 
 %endif ; EFI_FUNCS_H

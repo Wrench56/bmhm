@@ -44,7 +44,7 @@ section .text
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  2 Oct 2025                     ;
-;  Updated    :  2 Oct 2025                     ;
+;  Updated    :  7 Oct 2025                     ;
 ;  Extensions : None                            ;
 ;  Libraries  : None                            ;
 ;  ABI used   : Microsoft x64 / custom          ;
@@ -82,5 +82,10 @@ efi_init_func_table:
     mov             [r8 + efi_func_table.AllocatePool], r11
     mov             r11, [r10 + efi_boot_services.FreePool]
     mov             [r8 + efi_func_table.FreePool], r11
+
+    ; Simple text input protocol function(s)
+    mov             r10, [rdx + efi_system_table.ConIn]
+    mov             r11, [r10 + efi_simple_text_input_protocol.ReadKeyStroke]
+    mov             [r8 + efi_func_table.ReadKeyStroke], r11
 
     ret             
