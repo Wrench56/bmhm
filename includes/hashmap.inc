@@ -42,6 +42,8 @@ struc hashmap_t
     .hash_callback:   ptr
     .printk_callback: ptr
     .printv_callback: ptr
+    .freek_callback:  ptr
+    .freev_callback:  ptr
 endstruc
 
 struc entry_t

@@ -7,7 +7,7 @@
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  7 Oct 2025                     ;
-;  Updated    :  7 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
 ;  Version    : 1.0.0                           ;
 ;  License    : MIT                             ;
 ;  Libraries  : None                            ;
@@ -24,9 +24,13 @@
 
 
 extern malloc
-extern fnv1a64_hash
+extern free
 extern printf
+
+extern fnv1a64_hash
+
 extern hashmap_init
+extern hashmap_set_frees
 
 section .text
 
@@ -59,15 +63,23 @@ section .text
 
 global hashmap_default_init
 hashmap_default_init:
-    sub             rsp, 32 + 8
+    push            rbp
+    sub             rsp, 32
 
     lea             rcx, [rel eq_callback]
     lea             rdx, [rel hash_callback]
     lea             r8, [rel printk_callback]
     lea             r9, [rel printv_callback]
     call            hashmap_init
+    mov             rbp, rax
 
-    add             rsp, 32 + 8
+    mov             rcx, rax
+    lea             rdx, [rel freek_callback]
+    lea             r8, [rel freev_callback]
+    call            hashmap_set_frees
+
+    add             rsp, 32
+    pop             rbp
     ret
 
 
@@ -173,7 +185,7 @@ eq_callback:
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  7 Oct 2025                     ;
-;  Updated    :  7 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
 ;  Extensions : None                            ;
 ;  Libraries  : None                            ;
 ;  ABI used   : Microsoft x64                   ;
@@ -192,8 +204,6 @@ eq_callback:
 ; ============================================= ;
 
 printk_callback:
-    mov             rax, rcx
-    ret
 
 
 ; ============================================= ;
@@ -226,3 +236,68 @@ printv_callback:
     mov             rax, rcx
     ret
 
+
+; ============================================= ;
+;  > freek_callback                             ;
+; --------------------------------------------- ;
+;                                               ;
+;  Frees the resources associated with the      ;
+;  key.                                         ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  8 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Local                           ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   void                                        ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - char16* value                      ;
+;                                               ;
+; ============================================= ;
+
+freek_callback:
+
+
+; ============================================= ;
+;  > freev_callback                             ;
+; --------------------------------------------- ;
+;                                               ;
+;  Frees the resources associated with the      ;
+;  value.                                       ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  8 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Local                           ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   void                                        ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - char16* value                      ;
+;                                               ;
+; ============================================= ;
+
+freev_callback:
+    sub             rsp, 32 + 8
+
+    call            free
+
+    add             rsp, 32 + 8
+    ret

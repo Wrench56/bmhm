@@ -7,7 +7,7 @@
 ;                                               ;
 ;  Author(s)  : Mark Devenyi                    ;
 ;  Created    :  2 Oct 2025                     ;
-;  Updated    :  7 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
 ;  Version    : 1.0.0                           ;
 ;  License    : MIT                             ;
 ;  Libraries  : None                            ;
@@ -22,6 +22,7 @@
 ;   > [F] hashmap_get                           ;
 ;   > [F] hashmap_add                           ;
 ;   > [F] hashmap_remove                        ;
+;   > [F] hashmap_set_frees                     ;
 ;                                               ;
 ; ============================================= ;
 
@@ -29,6 +30,7 @@
 
 extern efi_funcs
 extern malloc
+extern free
 extern memset
 
 section .text
@@ -85,6 +87,9 @@ hashmap_init:
     mov             [rax + hashmap_t.hash_callback], r13
     mov             [rax + hashmap_t.printk_callback], r14
     mov             [rax + hashmap_t.printv_callback], r15
+    lea             r15, [rel hashmap_skip_free]
+    mov             qword [rax + hashmap_t.freek_callback], r15
+    mov             qword [rax + hashmap_t.freev_callback], r15
     mov             qword [rax + hashmap_t.capacity], HASHMAP_INITIAL_CAPACITY
     mov             r15, rax
 
@@ -111,6 +116,40 @@ hashmap_init:
 
 .error:
     jmp .exit
+
+
+; ============================================= ;
+;  > hashmap_set_frees                          ;
+; --------------------------------------------- ;
+;                                               ;
+;  Set free callbacks for key and value.        ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  8 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Global                          ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   ptr value                                   ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - ptr hashmap                        ;
+;    > RDX - ptr freek_callback                 ;
+;    > R8  - ptr freev_callback                 ;
+;                                               ;
+; ============================================= ;
+global hashmap_set_frees
+hashmap_set_frees:
+    mov             [rcx + hashmap_t.freek_callback], rdx
+    mov             [rcx + hashmap_t.freev_callback], r8
+    ret
 
 
 ; ============================================= ;
@@ -289,7 +328,7 @@ hashmap_add:
     mov             [rcx + r12], rax
     mov             r14, rax
 
-.tombstone_found:
+.set_entry_fields:
     mov             byte [r14 + entry_t.slotstate], 1
     mov             [r14 + entry_t.key], r11
     mov             [r14 + entry_t.value], r15
@@ -306,6 +345,12 @@ hashmap_add:
     pop             rbp
     ret
 
+.tombstone_found:
+    mov             rcx, [r14 + entry_t.key]
+    call            [rbp + hashmap_t.freek_callback]
+    mov             rcx, [r14 + entry_t.value]
+    call            [rbp + hashmap_t.freev_callback]
+    jmp             .set_entry_fields
 
 ; ============================================= ;
 ;  > hashmap_remove                             ;
@@ -399,4 +444,34 @@ hashmap_remove:
     pop             r12
     pop             r11
     pop             rbp
+    ret
+
+
+; ============================================= ;
+;  > hashmap_skip_free                          ;
+; --------------------------------------------- ;
+;                                               ;
+;  Skip freeing a key or a value.               ;
+;                                               ;
+;  Author(s)  : Mark Devenyi                    ;
+;  Created    :  8 Oct 2025                     ;
+;  Updated    :  8 Oct 2025                     ;
+;  Extensions : None                            ;
+;  Libraries  : None                            ;
+;  ABI used   : Microsoft x64                   ;
+;                                               ;
+; --------------------------------------------- ;
+;                                               ;
+;  Scope      : Local                           ;
+;  Effects    : None                            ;
+;                                               ;
+;  Returns:                                     ;
+;   void                                        ;
+;                                               ;
+;  Arguments:                                   ;
+;    > RCX - char16* data                       ;
+;                                               ;
+; ============================================= ;
+
+hashmap_skip_free:
     ret
