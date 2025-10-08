@@ -14,3 +14,4 @@ A ~6 day adventure of implementing a linear-probing based hashmap on baremetal A
 * A simple user interface to test the implementation
 * No external libraries used (except UEFI of course)
 * No memory leaks (not that it matters too much in this case)
+* Update values when using `hashmap_add()` with a key already in the hashmap
