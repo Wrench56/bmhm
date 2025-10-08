@@ -88,4 +88,4 @@ efi_init_func_table:
     mov             r11, [r10 + efi_simple_text_input_protocol.ReadKeyStroke]
     mov             [r8 + efi_func_table.ReadKeyStroke], r11
 
-    ret             
+    ret
