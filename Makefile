@@ -5,8 +5,8 @@ SRCDIR   := src
 BUILDDIR := build
 TARGET   := $(BUILDDIR)/main.efi
 
-SRCS  := $(shell find $(SRCDIR) -name '*.asm')
-OBJS  := $(patsubst $(SRCDIR)/%.asm,$(BUILDDIR)/%.obj,$(SRCS))
+SRCS := $(filter-out %_helpers.asm,$(shell find $(SRCDIR) -name '*.asm'))
+OBJS := $(patsubst $(SRCDIR)/%.asm,$(BUILDDIR)/%.obj,$(SRCS))
 
 NASMFLAGS := -f win64 -Iincludes/
 LDFLAGS   := /nologo /entry:efi_main /subsystem:efi_application /nodefaultlib /debug:none
