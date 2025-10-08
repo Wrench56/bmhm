@@ -287,13 +287,14 @@ hashmap_add:
     push            r13
     push            r14
     push            r15
-    sub             rsp, 32 + 8
+    push            rbx
+    sub             rsp, 32
 
     ; RBP = pointer to hashmap
     mov             rbp, rcx
 
-    ; R11 = pointer to key
-    mov             r11, rdx
+    ; RBX = pointer to key
+    mov             rbx, rdx
 
     ; R15 = pointer to value
     mov             r15, r8
@@ -305,18 +306,14 @@ hashmap_add:
     cmp             rdx, rcx
     jbe             .skip_growth
 
-    mov             qword [rsp + 32], r11
-
     lea             rdx, [2 * rcx]
     mov             rcx, rbp
     call            hashmap_resize
     test            rax, rax
     jz              .add_fail
 
-    mov             r11, [rsp + 32]
-
 .skip_growth:
-    mov             rcx, r11
+    mov             rcx, rbx
     call            [rbp + hashmap_t.hash_callback]
 
     ; R12 = hash result + iteration
@@ -339,6 +336,12 @@ hashmap_add:
     movzx           r8d, byte [r14 + entry_t.slotstate]
     test            r8d, r8d
     je              .tombstone_found
+    
+    mov             rcx, [r14 + entry_t.key]
+    mov             rdx, rbx
+    call            [rbp + hashmap_t.eq_callback]
+    test            rax, rax
+    je              .update_entry
 
     lea             r12, [r12 + 1]
     jmp             .floop
@@ -354,13 +357,14 @@ hashmap_add:
 
 .set_entry_fields:
     mov             byte [r14 + entry_t.slotstate], 1
-    mov             [r14 + entry_t.key], r11
+    mov             [r14 + entry_t.key], rbx
     mov             [r14 + entry_t.value], r15
     mov             rax, 1024
     add             qword [rbp + hashmap_t.size], 1
 
 .epilog:
-    add             rsp, 32 + 8
+    add             rsp, 32
+    pop             rbx
     pop             r15
     pop             r14
     pop             r13
@@ -373,12 +377,15 @@ hashmap_add:
     xor             rax, rax
     jmp             .epilog
 
+.update_entry:
 .tombstone_found:
     mov             rcx, [r14 + entry_t.key]
     call            [rbp + hashmap_t.freek_callback]
     mov             rcx, [r14 + entry_t.value]
     call            [rbp + hashmap_t.freev_callback]
     jmp             .set_entry_fields
+
+
 
 ; ============================================= ;
 ;  > hashmap_remove                             ;
