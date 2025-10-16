@@ -1,5 +1,7 @@
 # BMHM - Baremetal hashmap implementation
 
+![Screenshot](https://github.com/Wrench56/bmhm/blob/main/assets/screenshot.png?raw=true)
+
 ## Introduction
 
 A ~6 day adventure of implementing a linear-probing based hashmap on baremetal AMD64 with nothing but UEFI. UEFI was an extremely useful tool as it allowed me to easily output text to the screen, easily take user input, and allocate some memory.
